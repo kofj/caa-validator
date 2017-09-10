@@ -38,7 +38,12 @@ func init() {
 }
 
 func main() {
-	detect(dns.Fqdn(pflag.Arg(0)))
+	domain := dns.Fqdn(pflag.Arg(0))
+	if domain == "." {
+		fmt.Println("give a domain please.")
+		os.Exit(0)
+	}
+	detect(domain)
 }
 
 func detect(name string) {
