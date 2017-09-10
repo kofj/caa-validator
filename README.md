@@ -7,7 +7,7 @@ Validate your CAA records.
 
 &emsp;&emsp;有 Golang 开发环境的用户可以通过下列命令安装：
 ```Shell
-go get -u github.com/kofj/caa-validator
+go get -u github.com/kofj/caa-validator/cli
 ```
 &emsp;&emsp;Or else you can [download binary](https://github.com/kofj/caa-validator/releases), add `PATH` of the executable to your `PATH` environment vars.
 
