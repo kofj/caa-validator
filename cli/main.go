@@ -1,30 +1,48 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/miekg/dns"
+	"github.com/spf13/pflag"
 )
 
 const ErrNoCAA = `Sorry, we couldn't detect any CAA records for your domain! Are you sure they were configured correctly?
 If no CAA records are defined, any Certificate Authority can provide SSL/TLS certificates for your domain, without restrictions.`
+const defaultNS = "114.114.114.114:53"
+const defaultTimeout = "500ms"
+
+var ns *string
+var timeout time.Duration
 
 func init() {
-	flag.Usage = func() {
+	pflag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n\tcaa-validator [domain]\n", os.Args[0])
-		flag.PrintDefaults()
+		pflag.PrintDefaults()
 	}
-	flag.Parse()
+	ns = pflag.StringP("server", "s", defaultNS, "name server")
+	tmp := pflag.StringP("timeout", "t", defaultTimeout, "timeout for dial, write and read")
+	pflag.Parse()
+
+	var err error
+	timeout, err = time.ParseDuration(*tmp)
+	if err != nil {
+		fmt.Println("parse timeout error:", err)
+		os.Exit(0)
+	}
+	if timeout > 1e10 {
+		timeout = 5e8
+	}
 }
 
 func main() {
-	detect(dns.Fqdn(flag.Arg(0)))
+	detect(dns.Fqdn(pflag.Arg(0)))
 }
 
 func detect(name string) {
-	conn, err := dns.DialTimeout("tcp", "114.114.114.114:53", 1e8)
+	conn, err := dns.DialTimeout("tcp", *ns, timeout)
 	if err != nil {
 		fmt.Println(err)
 		return
